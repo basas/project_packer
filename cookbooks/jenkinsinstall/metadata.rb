@@ -1,0 +1,8 @@
+name                'jenkinsinstall'
+maintainer          'Vytautas Stanaitis'
+maintainer_email    'vytautas@basas.lt'
+license             'All Rights Reserved'
+description         'Installs and configures Docker for monitoring system and show reports'
+chef_version        '= 16.6.14'
+version             '1.0.0'
+depends             'jenkins', '= 8.0.2'

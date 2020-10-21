@@ -1,0 +1,54 @@
+{
+  "variables": {
+    "aws_access_key": "{{env `AWS_AK`}}",
+    "aws_secret_key": "{{env `AWS_SK`}}",
+    "PKR_VAR_aws_ebs_snapshopid": "{{env `PKR_VAR_aws_ebs_snapshopid`}}",
+    "PKR_VAR_aws_security_group_ids": "{{env `PKR_VAR_aws_security_group_ids`}}",
+    "PKR_VAR_jenkins_adm": "{{env `PKR_VAR_jenkins_adm`}}",
+    "PKR_VAR_jenkins_adm_pwd": "{{env `PKR_VAR_jenkins_adm_pwd`}}"
+  },
+  "sensitive-variables": ["PKR_VAR_jenkins_adm", "PKR_VAR_jenkins_adm_pwd"],
+
+  "builders": [
+    {
+      "type": "amazon-ebs",
+      "region": "eu-central-1",
+      "source_ami": "ami-00a205cb8e06c3c4e",
+      "instance_type": "t2.micro",
+      "access_key": "{{user `aws_access_key`}}",
+      "secret_key": "{{user `aws_secret_key`}}",
+      "ssh_username": "ec2-user",
+      "ami_name": "packer-jenkins",
+      "launch_block_device_mappings": [{
+        "device_name": "/dev/sdb",
+        "snapshot_id": "{{user `PKR_VAR_aws_ebs_snapshopid`}}",
+        "delete_on_termination": false
+      }],
+      "security_group_ids" : ["{{user `PKR_VAR_aws_security_group_ids`}}"]
+    }
+  ],
+  "provisioners": [
+    {
+      "type": "chef-solo",
+      "cookbook_paths": ["cookbooks"],
+      "run_list":[ "jenkinsinstall::default"],
+      "json": {
+        "jenkinsinstall": {
+          "jenkins_adm": "{{user `PKR_VAR_jenkins_adm`}}",
+          "jenkins_adm_pwd": "{{user `PKR_VAR_jenkins_adm_pwd`}}",
+          "aws_ak": "{{user `aws_access_key`}}",
+          "aws_sk": "{{user `aws_secret_key`}}"
+        }
+      }
+    }
+  ],
+  "post-processors": [
+    {
+      "type": "manifest",
+      "output": "manifest.json",
+      "strip_path": true
+    }
+  ]
+}
+
+  
